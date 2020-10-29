@@ -1,3 +1,22 @@
+import HTTP
+
+test_path = "/home/atomicbomber/Desktop/process_temp/D03105030 Franki Tello Panjaitan.pdf"
+
+function pdftotxt(pdfpath, tika_url="http://localhost:9998")
+    response = nothing
+    open(pdfpath) do pdffilestream
+        response = HTTP.request(
+            "PUT",
+            joinpath(tika_url, "tika"),
+            Dict([ ("Content-Type", "application/pdf") ]),
+            pdffilestream
+        )
+    end
+    
+    return String(response.body)
+end
+
+tika_executable_path = "/home/atomicbomber/programs/tika-server-1.24.jar" 
 input_dir = "/home/atomicbomber/Desktop/data_skripsi_informatika_untan"
 
 temp_dir = "/home/atomicbomber/Desktop/process_temp"
@@ -79,3 +98,14 @@ Threads.@threads for mahasiswa_dir in readdir(temp_dir, join=true)
 
     run(`pdfunite $input_files $output_filepath`)
 end
+
+for file in readdir(temp_dir, join=true)
+    isdir(file) && continue
+
+    basefile, ext = splitext(file)
+
+    open("$basefile.txt", "w") do filestream
+        print(filestream, pdftotxt(file))
+    end
+end
+
