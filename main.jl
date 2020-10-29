@@ -123,16 +123,16 @@ for mahasiswa_name in mahasiswa_names
     )
 end
 
-output_directory = "/home/atomicbomber/Desktop/experiment"
+temp_directory = "/home/atomicbomber/Desktop/experiment"
+!isdir(temp_directory) && mkdir(temp_directory)
+
+out_directory = "/home/atomicbomber/Desktop/output"
+!isdir(out_directory) && mkdir(out_directory)
 
 for (key, value) in final_catalogue
-    if (!isdir(output_directory))
-        mkdir(output_directory)
-    end
-
     for (mahasiswa_name, files) in final_catalogue
 
-        mahasiswa_dir = joinpath(output_directory, mahasiswa_name)
+        mahasiswa_dir = joinpath(temp_directory, mahasiswa_name)
         !isdir(mahasiswa_dir) && mkdir(mahasiswa_dir)
 
         for file in files
@@ -155,5 +155,19 @@ for (key, value) in final_catalogue
                 end
             end
         end
+    end
+end
+
+for (root, dir, files) in walkdir(temp_directory)
+    mahasiswa_identity = splitdir(root)[2]
+    out_file_path = joinpath(out_directory, "$(mahasiswa_identity).pdf")
+
+    pdf_files = [joinpath(root, file) for file in files if splitext(file)[2] === ".pdf"]
+    
+    if (length(pdf_files) !== 0)
+        println("Merging $(join(pdf_files, ", ", " and ")) to $out_file_path")
+
+        command = `pdfunite $pdf_files $out_file_path`
+        run(command)
     end
 end
