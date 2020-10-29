@@ -68,7 +68,6 @@ end
 
 
 final_catalogue = Dict{String, Array{String, 1}}()
-
 prioritized_extensions = [".pdf", ".docx", ".doc"]
 
 for mahasiswa_name in mahasiswa_names
@@ -117,10 +116,44 @@ for mahasiswa_name in mahasiswa_names
     if (length(final_catalogue[mahasiswa_name]) !== 0)
         continue
     end
+
+    append!(
+        final_catalogue[mahasiswa_name],
+        contains_remainder[mahasiswa_name]
+    )
 end
 
+output_directory = "/home/atomicbomber/Desktop/experiment"
+
 for (key, value) in final_catalogue
-    println(key)
-    println(value)
-    println()
+    if (!isdir(output_directory))
+        mkdir(output_directory)
+    end
+
+    for (mahasiswa_name, files) in final_catalogue
+
+        mahasiswa_dir = joinpath(output_directory, mahasiswa_name)
+        !isdir(mahasiswa_dir) && mkdir(mahasiswa_dir)
+
+        for file in files
+            extension = splitext(file)[2]
+            dir, filename = splitdir(file)
+            
+            bare_filename, filename_extension = splitext(filename)
+            converted_filename = "$bare_filename.pdf"
+
+            if (extension === ".docx" || extension === ".doc")
+                if (!isfile(joinpath(mahasiswa_dir, converted_filename)))
+                    println("Converting $(filename) to PDF...\n")
+                    run(`libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir $mahasiswa_dir $file`)
+                    println()
+                end
+            elseif (extension === ".pdf")
+                if (!isfile(joinpath(mahasiswa_dir, filename)))
+                    println("Copying $file to $mahasiswa_dir")
+                    cp(file, joinpath(mahasiswa_dir, filename), force=true)
+                end
+            end
+        end
+    end
 end
