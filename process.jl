@@ -2,19 +2,23 @@ import HTTP
 
 test_path = "/home/atomicbomber/Desktop/process_temp/D03105030 Franki Tello Panjaitan.pdf"
 
-function pdftotxt(pdfpath, tika_url="http://localhost:9998")
-    response = nothing
-    open(pdfpath) do pdffilestream
-        response = HTTP.request(
-            "PUT",
-            joinpath(tika_url, "tika"),
-            Dict([ ("Content-Type", "application/pdf") ]),
-            pdffilestream
-        )
-    end
-    
-    return String(response.body)
+function pdftotext(pdfpath)
+    return read(`pdftotext "$pdfpath" -`)
 end
+
+# function pdftotxt(pdfpath, tika_url="http://localhost:9998")
+#     response = nothing
+#     open(pdfpath) do pdffilestream
+#         response = HTTP.request(
+#             "PUT",
+#             joinpath(tika_url, "tika"),
+#             Dict([ ("Content-Type", "application/pdf") ]),
+#             pdffilestream
+#         )
+#     end
+    
+#     return String(response.body)
+# end
 
 tika_executable_path = "/home/atomicbomber/programs/tika-server-1.24.jar" 
 input_dir = "/home/atomicbomber/Desktop/data_skripsi_informatika_untan"
